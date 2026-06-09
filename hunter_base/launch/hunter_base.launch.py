@@ -42,7 +42,7 @@ def generate_launch_description():
                 'odom_topic_name': launch.substitutions.LaunchConfiguration('odom_topic_name'),
                 'simulated_robot': launch.substitutions.LaunchConfiguration('simulated_robot'),
                 'control_rate': launch.substitutions.LaunchConfiguration('control_rate'),
-                'robot_model': launch.substitutions.LaunchConfiguration('hunter2'),
+                'robot_model': launch.substitutions.LaunchConfiguration('robot_model'),
 
         }])
 
@@ -54,6 +54,7 @@ def generate_launch_description():
         odom_topic_arg,
         simulated_robot_arg,
         sim_control_rate_arg,
-        hunter_base_node,
-        robot_model_arg
+        robot_model_arg,
+        
+        hunter_base_node
     ])
