@@ -61,6 +61,7 @@ class HunterMessenger {
   void SetOdometryFrame(std::string frame) { odom_frame_ = frame; }
   void SetBaseFrame(std::string frame) { base_frame_ = frame; }
   void SetOdometryTopicName(std::string name) { odom_topic_name_ = name; }
+  void SetPublishOdomTf(bool enable) { publish_odom_tf_ = enable; }
   void SetWeelbase(float Weelbase){
     l = Weelbase;
   }
@@ -169,6 +170,8 @@ class HunterMessenger {
 
   bool simulated_robot_ = false;
   int sim_control_rate_ = 50;
+
+  bool publish_odom_tf_ = true;
 
   westonrobot::SystemPropagator<BicycleKinematics> model_;
 
@@ -281,18 +284,21 @@ class HunterMessenger {
     geometry_msgs::msg::Quaternion odom_quat =
         createQuaternionMsgFromYaw(theta_);
 
-    // publish tf transformation
-    geometry_msgs::msg::TransformStamped tf_msg;
-    tf_msg.header.stamp = current_time_;
-    tf_msg.header.frame_id = odom_frame_;
-    tf_msg.child_frame_id = base_frame_;
+    // publish tf transformation (unless an external node, e.g. a
+    // robot_localization EKF, is the TF authority for this edge)
+    if (publish_odom_tf_) {
+      geometry_msgs::msg::TransformStamped tf_msg;
+      tf_msg.header.stamp = current_time_;
+      tf_msg.header.frame_id = odom_frame_;
+      tf_msg.child_frame_id = base_frame_;
 
-    tf_msg.transform.translation.x = position_x_;
-    tf_msg.transform.translation.y = position_y_;
-    tf_msg.transform.translation.z = 0.0;
-    tf_msg.transform.rotation = odom_quat;
+      tf_msg.transform.translation.x = position_x_;
+      tf_msg.transform.translation.y = position_y_;
+      tf_msg.transform.translation.z = 0.0;
+      tf_msg.transform.rotation = odom_quat;
 
-    tf_broadcaster_->sendTransform(tf_msg);
+      tf_broadcaster_->sendTransform(tf_msg);
+    }
 
     // publish odometry and tf messages
     nav_msgs::msg::Odometry odom_msg;
