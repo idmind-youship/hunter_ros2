@@ -26,8 +26,14 @@ struct HunterV2Params {
   // max linear velocity: 1.5 m/s
   static constexpr double max_steer_angle =
       0.58;  // in rad, 0.75 for inner wheel
+  // Corrected from the manual's 0.461 rad: /hunter_status.steering_angle (the
+  // central angle) hard-saturated at +-0.339 rad across 1680 samples in
+  // nav_debug_1789142483 -- the real mechanical limit of this unit. Set a few
+  // mrad below that ceiling. (Wheelbase/track here, 0.65/0.605, match the
+  // robot's actual geometry per AgileX's spec, so this is the model selected
+  // at runtime via robot_model=="hunter2".)
   static constexpr double max_steer_angle_central =
-      0.461;  // max central angle
+      0.335;  // max central angle
   static constexpr double max_linear_speed = 1.5;  // in m/ss
 };
 

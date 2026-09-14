@@ -98,11 +98,17 @@ void HunterBaseRos::Run() {
 
     if(robot_model_=="hunter_se")
     {
-      messenger->SetTrack(HunterV1Params::track);
-      messenger->SetWeelbase(HunterV1Params::wheelbase);
-      messenger->SetMaxSteerAngleCentral(HunterV1Params::max_steer_angle_central);
-      messenger->SetMaxSteerAngle(HunterV1Params::max_steer_angle);
-      
+      // This unit is badged Hunter SE but has Hunter 2.0 geometry (wheelbase
+      // 0.65 m, track 0.605 m per AgileX's spec), so it uses HunterV2Params --
+      // which also carries the measured 0.335 rad max central steering angle.
+      // The stock HunterSEParams (0.52/0.55) does NOT match this robot. Note
+      // odometry (bicycle_model.hpp) also hardcodes HunterV2Params::wheelbase,
+      // so keeping this on HunterV2Params keeps a single source of truth.
+      messenger->SetTrack(HunterV2Params::track);
+      messenger->SetWeelbase(HunterV2Params::wheelbase);
+      messenger->SetMaxSteerAngleCentral(HunterV2Params::max_steer_angle_central);
+      messenger->SetMaxSteerAngle(HunterV2Params::max_steer_angle);
+
     }
     else if (robot_model_=="hunter2")
     {

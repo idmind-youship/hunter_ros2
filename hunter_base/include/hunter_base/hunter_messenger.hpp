@@ -346,11 +346,17 @@ class HunterMessenger {
     int k = msg.angular.z / fabs(msg.angular.z);
     if ((radius-l)<0 )
     {
-      return  k*max_steer_angle;
+      // Clamp on max_steer_angle_central: this return value is a central
+      // (bicycle-model) angle like phi_i below, not the inner-wheel angle
+      // max_steer_angle represents. max_steer_angle_central is the measured
+      // limit (nav_debug_1789142483: /hunter_status saturated at +-0.339 rad).
+      return  k*max_steer_angle_central;
     }
 
     double phi_i;
     phi_i = atan(l/(radius-w/2));
+    if (phi_i > max_steer_angle_central)
+      phi_i = max_steer_angle_central;
     if(msg.linear.x<0)
       phi_i *= -1.0;
     return k*phi_i;
