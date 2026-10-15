@@ -28,7 +28,10 @@ def generate_launch_description():
                                                    description='Whether running with simulator')
     sim_control_rate_arg = DeclareLaunchArgument('control_rate', default_value='50',
                                                  description='Simulation control loop update rate')
-    
+    # TEMPORARY (test): base velocity-scale correction, 1.0 = disabled.
+    odom_scale_arg = DeclareLaunchArgument('odom_scale', default_value='1.0',
+                                           description='TEMP: base velocity-scale correction (1.0 = disabled)')
+
     hunter_base_node = launch_ros.actions.Node(
         package='hunter_base',
         executable='hunter_base_node',
@@ -43,6 +46,7 @@ def generate_launch_description():
                 'simulated_robot': launch.substitutions.LaunchConfiguration('simulated_robot'),
                 'control_rate': launch.substitutions.LaunchConfiguration('control_rate'),
                 'robot_model': launch.substitutions.LaunchConfiguration('robot_model'),
+                'odom_scale': launch.substitutions.LaunchConfiguration('odom_scale'),
 
         }])
 
@@ -55,6 +59,7 @@ def generate_launch_description():
         simulated_robot_arg,
         sim_control_rate_arg,
         robot_model_arg,
-        
+        odom_scale_arg,
+
         hunter_base_node
     ])

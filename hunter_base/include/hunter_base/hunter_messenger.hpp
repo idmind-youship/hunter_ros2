@@ -62,6 +62,10 @@ class HunterMessenger {
   void SetBaseFrame(std::string frame) { base_frame_ = frame; }
   void SetOdometryTopicName(std::string name) { odom_topic_name_ = name; }
   void SetPublishOdomTf(bool enable) { publish_odom_tf_ = enable; }
+  // TEMPORARY (test): multiplicative correction for the base's over-reported
+  // body velocity (~+9.8% straight-line, see ODOM_SCALE_INVESTIGATION.md).
+  // 1.0 = no change. Applied to linear_speed_ before integration and twist.
+  void SetOdomScale(double scale) { odom_scale_ = scale; }
   void SetWeelbase(float Weelbase){
     l = Weelbase;
   }
@@ -173,6 +177,9 @@ class HunterMessenger {
 
   bool publish_odom_tf_ = true;
 
+  // TEMPORARY (test): base velocity-scale correction, 1.0 = disabled.
+  double odom_scale_ = 1.0;
+
   westonrobot::SystemPropagator<BicycleKinematics> model_;
 
   std::mutex twist_mutex_;
@@ -268,7 +275,9 @@ class HunterMessenger {
 
   void PublishOdometryToROS(const MotionStateMessage &msg, double dt) {
     // perform numerical integration to get an estimation of pose
-    double linear_speed_ = msg.linear_velocity;
+    // TEMPORARY (test): apply odom_scale_ here so the correction flows into both
+    // the integrated pose and the published twist.linear.x / angular.z below.
+    double linear_speed_ = msg.linear_velocity * odom_scale_;
     // double angular_speed = msg.angular_velocity;
     double steering_angle_ = ConvertInnerAngleToCentral(msg.steering_angle);
     // double lateral_speed = 0;

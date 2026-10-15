@@ -41,7 +41,10 @@ class HunterBaseRos : public rclcpp::Node {
   int sim_control_rate_ = 50;
 
   bool publish_odom_tf_ = true;
-  
+
+  // TEMPORARY (test): base velocity-scale correction, 1.0 = disabled.
+  double odom_scale_ = 1.0;
+
   int version=2;
   bool is_omni_ = false;
   std::shared_ptr<HunterRobot> robot_;

@@ -30,6 +30,9 @@ HunterBaseRos::HunterBaseRos(std::string node_name)
 
   this->declare_parameter("publish_odom_tf", rclcpp::ParameterValue(true));
 
+  // TEMPORARY (test): base velocity-scale correction, 1.0 = disabled.
+  this->declare_parameter("odom_scale", rclcpp::ParameterValue(1.0));
+
   LoadParameters();
 }
 
@@ -49,6 +52,8 @@ void HunterBaseRos::LoadParameters() {
 
   this->get_parameter_or<bool>("publish_odom_tf", publish_odom_tf_, true);
 
+  this->get_parameter_or<double>("odom_scale", odom_scale_, 1.0);
+
   std::cout << "Loading parameters: " << std::endl;
   std::cout << "- port name: " << port_name_ << std::endl;
   std::cout << "- odom frame name: " << odom_frame_ << std::endl;
@@ -60,6 +65,7 @@ void HunterBaseRos::LoadParameters() {
   std::cout << "- sim control rate: " << sim_control_rate_ << std::endl;
   std::cout << "- publish odom tf: " << std::boolalpha << publish_odom_tf_
             << std::endl;
+  std::cout << "- odom scale (TEMP test): " << odom_scale_ << std::endl;
   std::cout << "----------------------------" << std::endl;
 }
 
@@ -130,6 +136,7 @@ void HunterBaseRos::Run() {
     messenger->SetBaseFrame(base_frame_);
     messenger->SetOdometryTopicName(odom_topic_name_);
     messenger->SetPublishOdomTf(publish_odom_tf_);
+    messenger->SetOdomScale(odom_scale_);  // TEMPORARY (test)
     if (simulated_robot_) messenger->SetSimulationMode(sim_control_rate_);
 
     // connect to robot and setup ROS subscription
