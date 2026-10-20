@@ -28,12 +28,23 @@ struct HunterV2Params {
       0.58;  // in rad, 0.75 for inner wheel
   // Corrected from the manual's 0.461 rad: /hunter_status.steering_angle (the
   // central angle) hard-saturated at +-0.339 rad across 1680 samples in
-  // nav_debug_1789142483 -- the real mechanical limit of this unit. Set a few
-  // mrad below that ceiling. (Wheelbase/track here, 0.65/0.605, match the
+  // nav_debug_1789142483 -- the base's limit for CAN commands (not the
+  // mechanical lock, see below). Set a few mrad below that ceiling. (Wheelbase/track here, 0.65/0.605, match the
   // robot's actual geometry per AgileX's spec, so this is the model selected
   // at runtime via robot_model=="hunter2".)
+  // Steering limit FOR CAN COMMANDS (control_mode 1). Measured on /hunter_status
+  // with the SDK requesting 0.470 rad inner: the base stops at 0.400 rad inner /
+  // 0.340 rad central (R_min ~1.84 m). The AgileX RC remote (control_mode 2)
+  // reaches 0.475 inner / 0.393 central on the same unit, so the firmware limits
+  // CAN steering below the mechanical lock -- nothing on the ROS side can reach
+  // the RC lock. Keep this at the CAN limit so commands, odometry and the
+  // planners' turning radius agree with what the base actually does.
+  // (Clamped as an inner-wheel angle via ConvertCentralAngleToInner() in
+  // HunterMessenger::AngelVelocity2Angel.)
+  // static constexpr double max_steer_angle_central = 0.335;
+  // static constexpr double max_steer_angle_central = 0.39;   // RC lock, not reachable over CAN
   static constexpr double max_steer_angle_central =
-      0.335;  // max central angle
+      0.34;  // max central angle (CAN)
   static constexpr double max_linear_speed = 1.5;  // in m/ss
 };
 

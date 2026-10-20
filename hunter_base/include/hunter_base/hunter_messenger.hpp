@@ -353,19 +353,35 @@ class HunterMessenger {
     radius = linear / angular;
 
     int k = msg.angular.z / fabs(msg.angular.z);
+
+    // The value returned here (and sent to the base via SetMotionCommand) is the
+    // INNER-WHEEL steering angle: phi_i = atan(l / (R - w/2)), with R the turning
+    // radius at the rear-axle midpoint. The base works in inner-wheel angles too
+    // (its reported steering_angle goes through ConvertInnerAngleToCentral()).
+    //
+    // max_steer_angle_central (0.335 rad) is a CENTRAL (bicycle-model) limit: it was
+    // measured on /hunter_status.steering_angle, which is already converted to
+    // central (nav_debug_1789142483: saturated at +-0.339 rad). Clamping the inner
+    // angle directly with it capped the steering at ~0.291 rad central (~85% of the
+    // real travel), so the AgileX RC remote (which talks to the base directly)
+    // turned noticeably more than cmd_vel. Clamp on the inner-wheel equivalent of
+    // the central limit instead (~0.394 rad for l=0.65, w=0.605).
+    const double max_inner = ConvertCentralAngleToInner(max_steer_angle_central);
+
     if ((radius-l)<0 )
     {
-      // Clamp on max_steer_angle_central: this return value is a central
-      // (bicycle-model) angle like phi_i below, not the inner-wheel angle
-      // max_steer_angle represents. max_steer_angle_central is the measured
-      // limit (nav_debug_1789142483: /hunter_status saturated at +-0.339 rad).
-      return  k*max_steer_angle_central;
+      // Turning radius tighter than the mechanical limit: full lock, with the same
+      // reverse sign handling as below.
+      double full_lock = max_inner;
+      if(msg.linear.x<0)
+        full_lock *= -1.0;
+      return  k*full_lock;
     }
 
     double phi_i;
     phi_i = atan(l/(radius-w/2));
-    if (phi_i > max_steer_angle_central)
-      phi_i = max_steer_angle_central;
+    if (phi_i > max_inner)
+      phi_i = max_inner;
     if(msg.linear.x<0)
       phi_i *= -1.0;
     return k*phi_i;
